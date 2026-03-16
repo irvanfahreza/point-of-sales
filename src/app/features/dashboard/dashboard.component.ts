@@ -21,13 +21,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   chart: Chart | null = null;
   chartDays: 7 | 30 = 7;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   ngOnInit(): void {
     this.loadDashboard();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   loadDashboard(): void {
     this.loading = true;
@@ -48,7 +48,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.chart = new Chart(this.chartRef.nativeElement, {
       type: 'bar',
       data: {
-        labels: chartData.map(d => d.date),
+        labels: chartData.map(d => {
+          const date = new Date(d.date);
+          return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+          });
+        }),
         datasets: [{
           label: 'Pendapatan',
           data: chartData.map(d => d.revenue),
@@ -61,13 +68,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: {
-          callbacks: { label: (ctx) => `Rp ${Number(ctx.raw).toLocaleString('id-ID')}` }
-        }},
-        scales: { y: {
-          ticks: { callback: (v) => 'Rp ' + Number(v).toLocaleString('id-ID') },
-          grid: { color: 'rgba(0,0,0,0.05)' }
-        }, x: { grid: { display: false } } }
+        plugins: {
+          legend: { display: false }, tooltip: {
+            callbacks: { label: (ctx) => `Rp ${Number(ctx.raw).toLocaleString('id-ID')}` }
+          }
+        },
+        scales: {
+          y: {
+            ticks: { callback: (v) => 'Rp ' + Number(v).toLocaleString('id-ID') },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          }, x: { grid: { display: false } }
+        }
       }
     });
   }
