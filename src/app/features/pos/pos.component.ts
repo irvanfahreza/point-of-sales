@@ -59,7 +59,7 @@ export class PosComponent implements OnInit {
 
   searchProducts(): void {
     this.searching = true;
-    const q = this.searchQuery || ' ';
+    const q = this.searchQuery.trim();
     this.api.get<any>('/products/search', { q }).subscribe({
       next: res => { this.searchResults = res.data || []; this.searching = false; },
       error: () => { this.searching = false; }
