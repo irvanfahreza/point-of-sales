@@ -1,0 +1,96 @@
+<!-- Product Form -->
+<div class="p-4 sm:p-6 max-w-2xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <a routerLink="/products" class="btn-icon text-gray-500">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <h1 class="page-title">{{ isEdit ? 'Edit Produk' : 'Tambah Produk' }}</h1>
+  </div>
+
+  <div *ngIf="loading" class="space-y-4">
+    <div *ngFor="let i of [1,2,3,4]" class="skeleton h-14 rounded-xl"></div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="card space-y-5">
+    <!-- Name -->
+    <div>
+      <label class="form-label">Nama Produk *</label>
+      <input formControlName="name" type="text" placeholder="Contoh: Ayam Bakar" class="form-input"
+             [class.border-red-400]="f['name'].invalid && f['name'].touched"/>
+      <p *ngIf="f['name'].invalid && f['name'].touched" class="text-red-500 text-xs mt-1">Nama produk wajib diisi</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- SKU -->
+      <div>
+        <label class="form-label">SKU / Barcode</label>
+        <input formControlName="sku" type="text" placeholder="Opsional" class="form-input"/>
+      </div>
+      <!-- Unit -->
+      <div>
+        <label class="form-label">Satuan</label>
+        <select formControlName="unit" class="form-select">
+          <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div>
+      <label class="form-label">Kategori</label>
+      <select formControlName="categoryId" class="form-select">
+        <option [value]="null">Tanpa Kategori</option>
+        <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Purchase Price -->
+      <div>
+        <label class="form-label">Harga Beli (Rp) *</label>
+        <input formControlName="purchasePrice" type="number" min="0" placeholder="0" class="form-input"
+               [class.border-red-400]="f['purchasePrice'].invalid && f['purchasePrice'].touched"/>
+      </div>
+      <!-- Selling Price -->
+      <div>
+        <label class="form-label">Harga Jual (Rp) *</label>
+        <input formControlName="sellingPrice" type="number" min="0" placeholder="0" class="form-input"
+               [class.border-red-400]="f['sellingPrice'].invalid && f['sellingPrice'].touched"/>
+        <p *ngIf="f['sellingPrice'].invalid && f['sellingPrice'].touched" class="text-red-500 text-xs mt-1">Harga jual wajib diisi</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Stock -->
+      <div>
+        <label class="form-label">Stok *</label>
+        <input formControlName="stock" type="number" min="0" placeholder="0" class="form-input"/>
+      </div>
+      <!-- Low Stock Threshold -->
+      <div>
+        <label class="form-label">Batas Stok Rendah</label>
+        <input formControlName="lowStockThreshold" type="number" min="0" placeholder="Ikuti pengaturan global" class="form-input"/>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label class="form-label">Deskripsi</label>
+      <textarea formControlName="description" rows="3" placeholder="Deskripsi produk (opsional)" class="form-input resize-none"></textarea>
+    </div>
+
+    <!-- Active Status -->
+    <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+      <input formControlName="isActive" type="checkbox" id="isActive" class="w-5 h-5 text-indigo-600 rounded"/>
+      <label for="isActive" class="text-sm font-medium text-gray-700">Produk Aktif</label>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 pt-2">
+      <a routerLink="/products" class="btn-secondary flex-1 text-center">Batal</a>
+      <button type="submit" [disabled]="saving" class="btn-primary flex-1">
+        {{ saving ? 'Menyimpan...' : (isEdit ? 'Perbarui Produk' : 'Simpan Produk') }}
+      </button>
+    </div>
+  </form>
+</div>

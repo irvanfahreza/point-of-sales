@@ -1,0 +1,91 @@
+<!-- Discount List -->
+<div class="p-4 sm:p-6 max-w-4xl mx-auto">
+  <div class="page-header">
+    <div><h1 class="page-title">Diskon</h1><p class="text-sm text-gray-500">Kelola preset diskon transaksi</p></div>
+    <button (click)="openCreate()" class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Tambah Diskon
+    </button>
+  </div>
+
+  <div class="hidden md:block table-wrapper">
+    <table class="w-full">
+      <thead class="table-head"><tr>
+        <th class="th">Nama</th><th class="th">Tipe</th><th class="th">Nilai</th><th class="th">Status</th><th class="th">Aksi</th>
+      </tr></thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngFor="let d of discounts" class="tr-hover">
+          <td class="td font-medium text-gray-900">{{ d.name }}</td>
+          <td class="td"><span [class]="d.type==='PERSENTASE' ? 'badge-info' : 'badge-success'">{{ d.type === 'PERSENTASE' ? 'Persentase' : 'Nominal' }}</span></td>
+          <td class="td font-semibold">{{ d.type==='PERSENTASE' ? d.value + '%' : formatRupiah(d.value) }}</td>
+          <td class="td"><span [class]="d.isActive ? 'badge-success' : 'badge-danger'">{{ d.isActive ? 'Aktif' : 'Non-Aktif' }}</span></td>
+          <td class="td">
+            <div class="flex gap-1">
+              <button (click)="openEdit(d)" class="btn-icon text-indigo-600 hover:bg-indigo-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button (click)="confirmDelete(d)" class="btn-icon text-red-500 hover:bg-red-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6"/></svg></button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="discounts.length===0"><td colspan="5" class="px-4 py-10 text-center text-gray-400">Belum ada diskon</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile -->
+  <div class="md:hidden space-y-3">
+    <div *ngFor="let d of discounts" class="card">
+      <div class="flex justify-between"><p class="font-semibold">{{ d.name }}</p><span [class]="d.isActive ? 'badge-success' : 'badge-danger'">{{ d.isActive ? 'Aktif' : 'Non-Aktif' }}</span></div>
+      <p class="text-sm text-gray-500 mt-1">{{ d.type==='PERSENTASE' ? 'Persentase: ' + d.value + '%' : 'Nominal: ' + formatRupiah(d.value) }}</p>
+      <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
+        <button (click)="openEdit(d)" class="btn-secondary flex-1 text-sm py-2">Edit</button>
+        <button (click)="confirmDelete(d)" class="btn-danger flex-1 text-sm py-2">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Modal -->
+  <div *ngIf="showForm" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+      <h3 class="text-lg font-bold mb-5">{{ editingId ? 'Edit Diskon' : 'Tambah Diskon' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+        <div>
+          <label class="form-label">Nama Diskon *</label>
+          <input formControlName="name" type="text" class="form-input" placeholder="Contoh: Diskon Member 10%"/>
+        </div>
+        <div>
+          <label class="form-label">Tipe *</label>
+          <select formControlName="type" class="form-select">
+            <option value="PERSENTASE">Persentase (%)</option>
+            <option value="NOMINAL">Nominal (Rp)</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Nilai *</label>
+          <input formControlName="value" type="number" step="0.01" min="0.01" class="form-input"
+                 [placeholder]="f['type'].value==='PERSENTASE' ? 'Contoh: 10 (untuk 10%)' : 'Contoh: 5000 (untuk Rp 5.000)'"/>
+          <p *ngIf="f['value'].invalid && f['value'].touched" class="text-red-500 text-xs mt-1">Nilai harus lebih dari 0</p>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+          <input formControlName="isActive" type="checkbox" id="dActive" class="w-5 h-5 text-indigo-600 rounded"/>
+          <label for="dActive" class="text-sm font-medium">Aktif</label>
+        </div>
+        <div class="flex gap-3">
+          <button type="button" (click)="closeForm()" class="btn-secondary flex-1">Batal</button>
+          <button type="submit" [disabled]="saving" class="btn-primary flex-1">{{ saving ? 'Menyimpan...' : 'Simpan' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md text-center shadow-2xl">
+      <p class="text-lg font-bold mb-2">Hapus Diskon?</p>
+      <p class="text-gray-500 text-sm mb-5">Yakin hapus <strong>{{ discountToDelete?.name }}</strong>?</p>
+      <div class="flex gap-3">
+        <button (click)="showDeleteModal=false" class="btn-secondary flex-1">Batal</button>
+        <button (click)="doDelete()" [disabled]="deleting" class="btn-danger flex-1">{{ deleting ? 'Menghapus...' : 'Hapus' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,186 @@
+<!-- POS Screen -->
+<div class="h-full flex flex-col">
+  <!-- Mobile Tabs -->
+  <div class="md:hidden flex border-b border-gray-100 bg-white shrink-0">
+    <button (click)="mobileTab='produk'" [class.border-b-2]="mobileTab==='produk'" [class.border-indigo-600]="mobileTab==='produk'"
+            [class.text-indigo-700]="mobileTab==='produk'" class="flex-1 py-3 text-sm font-semibold text-gray-500 transition-colors">
+      Produk
+    </button>
+    <button (click)="mobileTab='keranjang'" [class.border-b-2]="mobileTab==='keranjang'" [class.border-indigo-600]="mobileTab==='keranjang'"
+            [class.text-indigo-700]="mobileTab==='keranjang'" class="flex-1 py-3 text-sm font-semibold text-gray-500 transition-colors relative">
+      Keranjang
+      <span *ngIf="cart.length>0" class="absolute top-2 right-8 w-5 h-5 bg-indigo-600 rounded-full text-white text-xs flex items-center justify-center">{{ cart.length }}</span>
+    </button>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden">
+    <!-- ===== LEFT PANEL - Products ===== -->
+    <div class="flex flex-col flex-1 md:flex-none md:w-[60%] overflow-hidden"
+         [class.hidden]="mobileTab !== 'produk'" [class.md:flex]="true">
+      <div class="p-3 sm:p-4 border-b bg-white shrink-0">
+        <div class="relative">
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="searchProducts()" placeholder="Cari produk atau scan SKU..."
+                 class="form-input pl-10"/>
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Product Grid -->
+      <div class="flex-1 overflow-y-auto p-3 sm:p-4">
+        <div *ngIf="searching" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div *ngFor="let i of [1,2,3,4,5,6]" class="skeleton h-28 rounded-2xl"></div>
+        </div>
+        <div *ngIf="!searching" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <button *ngFor="let p of searchResults" (click)="addToCart(p)" [disabled]="p.stock===0"
+                  class="bg-white rounded-2xl p-3 shadow-card border border-gray-50 text-left hover:shadow-card-lg hover:border-indigo-200
+                         active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
+            <div class="w-10 h-10 bg-gradient-to-br from-indigo-100 to-violet-100 rounded-xl flex items-center justify-center mb-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+            <p class="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2">{{ p.name }}</p>
+            <p class="text-xs font-bold text-indigo-700 mt-1">{{ formatRupiah(p.sellingPrice) }}</p>
+            <div class="flex items-center justify-between mt-1">
+              <p class="text-xs text-gray-400">Stok: {{ p.stock }}</p>
+              <span *ngIf="p.isLowStock" class="badge-warning text-xs p-0 px-1.5">!</span>
+            </div>
+          </button>
+        </div>
+        <div *ngIf="!searching && searchResults.length===0" class="text-center py-12 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <p>Tidak ada produk ditemukan</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL - Cart ===== -->
+    <div class="flex flex-col border-l border-gray-100 bg-white overflow-hidden"
+         style="width: 100%"
+         [class.hidden]="mobileTab !== 'keranjang'"
+         [class.md:flex]="true"
+         [style.width]="'100%'"
+         [ngStyle]="{'width': 'auto', 'flex': '1'}"
+         class="md:w-[40%] md:max-w-sm lg:max-w-md">
+
+      <!-- Cart Header -->
+      <div class="p-4 border-b shrink-0">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-gray-900">Keranjang ({{ cart.length }})</h2>
+          <button *ngIf="cart.length>0" (click)="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium">Kosongkan</button>
+        </div>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div *ngIf="cart.length===0" class="text-center py-10 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <p class="text-sm">Keranjang kosong</p>
+        </div>
+        <div *ngFor="let item of cart; let i = index" class="flex items-center gap-2 bg-gray-50 rounded-xl p-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">{{ item.product.name }}</p>
+            <p class="text-xs text-indigo-700 font-medium">{{ formatRupiah(item.product.sellingPrice) }}</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button (click)="updateQty(i, item.quantity-1)" class="w-7 h-7 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors flex items-center justify-center text-sm font-bold">-</button>
+            <input type="number" [value]="item.quantity" (change)="updateQty(i, +$any($event.target).value)"
+                   class="w-10 text-center text-sm font-bold border-0 bg-transparent outline-none"/>
+            <button (click)="updateQty(i, item.quantity+1)" class="w-7 h-7 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors flex items-center justify-center text-sm font-bold">+</button>
+          </div>
+          <button (click)="removeFromCart(i)" class="text-red-400 hover:text-red-600 p-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Payment Summary -->
+      <div class="border-t p-4 shrink-0 space-y-3 bg-white">
+        <!-- Customer name -->
+        <input type="text" [(ngModel)]="customerName" placeholder="Nama pelanggan (opsional)" class="form-input text-sm py-2.5"/>
+
+        <!-- Discount -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="checkbox" [(ngModel)]="useManualDiscount" id="useManual" class="w-4 h-4 text-indigo-600 rounded"/>
+            <label for="useManual" class="text-xs font-medium text-gray-700">Diskon manual</label>
+          </div>
+          <select *ngIf="!useManualDiscount" [(ngModel)]="selectedDiscountId" class="form-select text-sm py-2.5">
+            <option value="">Pilih diskon preset</option>
+            <option *ngFor="let d of activeDiscounts" [value]="d.id">
+              {{ d.name }} ({{ d.type==='PERSENTASE' ? d.value + '%' : formatRupiah(d.value) }})
+            </option>
+          </select>
+          <div *ngIf="useManualDiscount" class="flex gap-2">
+            <select [(ngModel)]="manualDiscountType" class="form-select text-sm py-2.5 flex-1">
+              <option value="PERSENTASE">%</option>
+              <option value="NOMINAL">Rp</option>
+            </select>
+            <input type="number" [(ngModel)]="manualDiscountValue" min="0" placeholder="Nilai" class="form-input text-sm py-2.5 flex-1"/>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div>
+          <label class="form-label text-xs">Metode Pembayaran</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button *ngFor="let m of ['TUNAI','QRIS','DEBIT','KARTU_KREDIT']" (click)="paymentMethod = $any(m)"
+                    [class.bg-indigo-600]="paymentMethod===m" [class.text-white]="paymentMethod===m"
+                    [class.border-indigo-600]="paymentMethod===m"
+                    class="py-2 px-3 rounded-xl border-2 text-xs font-semibold transition-all border-gray-200 hover:border-indigo-300">
+              {{ m === 'KARTU_KREDIT' ? 'Kartu Kredit' : m }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Cash paid input -->
+        <div *ngIf="paymentMethod==='TUNAI'">
+          <label class="form-label text-xs">Jumlah Bayar (Rp)</label>
+          <input type="number" [(ngModel)]="amountPaid" [min]="grandTotal" class="form-input text-sm py-2.5"/>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-gray-50 rounded-2xl p-3 space-y-1.5 text-sm">
+          <div class="flex justify-between text-gray-500"><span>Subtotal</span><span>{{ formatRupiah(subtotal) }}</span></div>
+          <div *ngIf="discountAmount>0" class="flex justify-between text-emerald-600"><span>Diskon</span><span>-{{ formatRupiah(discountAmount) }}</span></div>
+          <div class="flex justify-between text-gray-500"><span>PPN {{ taxRate }}%</span><span>{{ formatRupiah(taxAmount) }}</span></div>
+          <div class="flex justify-between font-bold text-gray-900 text-base pt-1 border-t border-gray-200"><span>Total</span><span class="text-indigo-700">{{ formatRupiah(grandTotal) }}</span></div>
+          <div *ngIf="paymentMethod==='TUNAI' && amountPaid > 0" class="flex justify-between text-emerald-600 font-semibold">
+            <span>Kembalian</span><span>{{ formatRupiah(change >= 0 ? change : 0) }}</span>
+          </div>
+        </div>
+
+        <button (click)="checkout()" [disabled]="processing || cart.length===0" class="btn-primary w-full text-base py-4">
+          <svg *ngIf="processing" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          {{ processing ? 'Memproses...' : 'Bayar & Selesaikan' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div *ngIf="showSuccessModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+      <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900">Transaksi Berhasil!</h3>
+      <p class="text-gray-500 mt-1 text-sm">{{ lastTransaction?.transactionNumber }}</p>
+      <p class="text-2xl font-bold text-indigo-700 mt-3" *ngIf="lastTransaction">{{ formatRupiah(lastTransaction.grandTotal) }}</p>
+      <div *ngIf="lastTransaction?.paymentMethod==='TUNAI'" class="mt-2">
+        <p class="text-sm text-gray-500">Kembalian: <strong class="text-emerald-600">{{ formatRupiah(lastTransaction.changeAmount) }}</strong></p>
+      </div>
+      <button (click)="closeSuccess()" class="btn-primary w-full mt-6">Transaksi Baru</button>
+    </div>
+  </div>
+</div>
