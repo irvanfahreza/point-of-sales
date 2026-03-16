@@ -19,6 +19,7 @@ interface NavItem {
 })
 export class ShellComponent implements OnInit {
   sidebarOpen = true;
+  mobileMenuOpen = false;
   user: any;
   toasts: Toast[] = [];
 
